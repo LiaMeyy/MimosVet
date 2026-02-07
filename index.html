@@ -1,220 +1,260 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administrador de Citas</title>
-
-  <!-- Bootstrap CSS -->
+  <title>Mimos Vet - Gestión Profesional</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f8f9fa;
+    }
 
-    <!-- CSS externo -->
-  <link rel="stylesheet" href="styles.css">
-  <!-- Archivo styles.css:
+    .card {
+      border: none;
+      border-radius: 20px;
+      transition: transform 0.3s ease;
+    }
 
-  body {
-    background-color: #fce4ec;
-  }
+    .card:hover {
+      transform: translateY(-5px);
+    }
 
-  -->
+    .animal-gif {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
 
+    .header-vet {
+      background-color: #fbd5e5; 
+      color: #633a4c;
+      border-radius: 0 0 40px 40px;
+      border-bottom: 4px solid #f8bbd0;
+    }
+
+    .btn-primary { background-color: #b5b6ff; border: none; }
+    .btn-primary:hover { background-color: #686de0; }
+    
+    .status-badge {
+      font-size: 0.8rem;
+      padding: 8px 15px;
+    }
+  </style>
 </head>
+
 <body>
-
-<div class="container my-4">
-
-  <!-- Título -->
-  <h1 class="text-center text-danger">Mimos Vet</h1>
-  <h3 class="text-center mb-4">ADMINISTRADOR DE CITAS</h3>
-
-  <!-- Botón Agregar -->
-  <div class="text-center mb-3">
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCita">
-      Agregar Cita
-    </button>
-  </div>
-
-  <!-- Filtros -->
-  <div class="d-flex justify-content-center gap-2 mb-4">
-    <button class="btn btn-outline-success" onclick="filtrar('Abierta')">Abiertas</button>
-    <button class="btn btn-outline-secondary" onclick="filtrar('Terminada')">Terminadas</button>
-    <button class="btn btn-outline-danger" onclick="filtrar('Anulada')">Anuladas</button>
-    <button class="btn btn-outline-dark" onclick="filtrar('Todas')">Todas</button>
-  </div>
-
-  <!-- Contenedor Citas -->
-  <div id="contenedorCitas" class="row g-3"></div>
-</div>
-
-<!-- Modal -->
-<div class="modal fade" id="modalCita" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title">Nueva Cita</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <form id="formCita">
-
-          <div class="row g-2">
-
-            <div class="col-md-6">
-              <input type="text" class="form-control" placeholder="Nombre Mascota" id="mascota">
-            </div>
-
-            <div class="col-md-6">
-              <input type="text" class="form-control" placeholder="Nombre Dueño" id="dueno">
-            </div>
-
-            <div class="col-md-6">
-              <input type="text" class="form-control" placeholder="Tipo Animal" id="tipo">
-            </div>
-
-            <div class="col-md-6">
-              <input type="tel" class="form-control" placeholder="Teléfono" id="telefono">
-            </div>
-
-            <div class="col-md-6">
-              <input type="date" class="form-control" id="fecha">
-            </div>
-
-            <div class="col-md-6">
-              <input type="time" class="form-control" id="hora">
-            </div>
-
-            <div class="col-12">
-              <textarea class="form-control" placeholder="Síntomas" id="sintomas"></textarea>
-            </div>
-
-            <div class="col-12">
-              <select class="form-select" id="estado">
-                <option value="">Estado</option>
-                <option>Abierta</option>
-                <option>Terminada</option>
-                <option>Anulada</option>
-              </select>
-            </div>
-
-          </div>
-
-        </form>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-success" onclick="guardarCita()">Guardar</button>
-      </div>
-
+  <header class="header-vet shadow py-4 mb-4">
+    <div class="container text-center">
+      <h1 class="fw-bold m-0">🐾 Mimos Vet 🐾</h1>
+      <p class="opacity-75 mb-0">Gestión Profesional de Pacientes</p>
     </div>
-  </div>
-</div>
+  </header>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <div class="container my-4">
+    <div id="alerta" class="mb-3"></div>
 
-<script>
-
-let citas = [];
-
-function guardarCita() {
-
-  const mascota = document.getElementById('mascota').value.trim();
-  const dueno = document.getElementById('dueno').value.trim();
-  const tipo = document.getElementById('tipo').value.trim();
-  const telefono = document.getElementById('telefono').value.trim();
-  const fecha = document.getElementById('fecha').value;
-  const hora = document.getElementById('hora').value;
-  const sintomas = document.getElementById('sintomas').value.trim();
-  const estado = document.getElementById('estado').value;
-
-  // Validar campos vacíos
-  if (!mascota || !dueno || !tipo || !telefono || !fecha || !hora || !sintomas || !estado) {
-    alert('Todos los campos son obligatorios');
-    return;
-  }
-
-  // Validar fecha futura
-  const hoy = new Date();
-  const fechaCita = new Date(fecha);
-
-  if (fechaCita <= hoy) {
-    alert('La fecha debe ser posterior a hoy');
-    return;
-  }
-
-  // Validar horario
-  const [h] = hora.split(':');
-  const horaNum = parseInt(h);
-
-  if (horaNum < 8 || horaNum > 20) {
-    alert('Horario permitido: 8am a 8pm');
-    return;
-  }
-
-  const cita = {
-    mascota,
-    dueno,
-    tipo,
-    telefono,
-    fecha,
-    hora,
-    sintomas,
-    estado
-  };
-
-  citas.push(cita);
-  mostrarCitas(citas);
-
-  document.getElementById('formCita').reset();
-
-  const modal = bootstrap.Modal.getInstance(document.getElementById('modalCita'));
-  modal.hide();
-}
-
-function mostrarCitas(lista) {
-
-  const contenedor = document.getElementById('contenedorCitas');
-  contenedor.innerHTML = '';
-
-  lista.forEach(c => {
-
-    contenedor.innerHTML += `
-      <div class="col-md-4">
-        <div class="card shadow">
-          <div class="card-body">
-
-            <h5 class="card-title">${c.mascota}</h5>
-
-            <p><strong>Dueño:</strong> ${c.dueno}</p>
-            <p><strong>Tipo:</strong> ${c.tipo}</p>
-            <p><strong>Tel:</strong> ${c.telefono}</p>
-            <p><strong>Fecha:</strong> ${c.fecha} ${c.hora}</p>
-            <p><strong>Síntomas:</strong> ${c.sintomas}</p>
-            <p><strong>Estado:</strong> ${c.estado}</p>
-
-          </div>
+    <div class="row mb-4 align-items-center">
+      <div class="col-md-6 text-center text-md-start">
+        <button class="btn btn-primary btn-lg shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#modalCita" onclick="limpiarFormulario()">
+          ➕ Nueva Cita
+        </button>
+      </div>
+      <div class="col-md-6 mt-3 mt-md-0">
+        <div class="d-flex justify-content-center justify-content-md-end flex-wrap gap-2">
+          <button class="btn btn-outline-success btn-sm" onclick="filtrar('Abierta')">Abiertas</button>
+          <button class="btn btn-outline-secondary btn-sm" onclick="filtrar('Terminada')">Terminadas</button>
+          <button class="btn btn-outline-danger btn-sm" onclick="filtrar('Anulada')">Anuladas</button>
+          <button class="btn btn-dark btn-sm" onclick="filtrar('Todas')">Ver Todas</button>
         </div>
       </div>
-    `;
+    </div>
 
-  });
-}
+    <div id="contenedorCitas" class="row g-4">
+      </div>
+  </div>
 
-function filtrar(estado) {
+  <div class="modal fade" id="modalCita" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold" id="modalTitulo">Nueva Cita Veterinaria</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="formCita">
+            <input type="hidden" id="indiceEditar">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Nombre Mascota</label>
+                <input type="text" class="form-control" id="mascota" placeholder="Ej: Zeus">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Propietario</label>
+                <input type="text" class="form-control" id="dueno" placeholder="Nombre completo">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Especie</label>
+                <select class="form-select" id="tipo">
+                  <option value="">Seleccione...</option>
+                  <option value="perro">Perro 🐶</option>
+                  <option value="gato">Gato 🐱</option>
+                  <option value="conejo">Conejo 🐰</option>
+                  <option value="hamster">Hámster 🐹</option>
+                  <option value="loro">Ave / Loro 🦜</option>
+                  <option value="reptil">Reptil / Iguana 🦎</option>
+                  <option value="minipig">Mini Pig 🐷</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Teléfono de contacto</label>
+                <input type="tel" class="form-control" id="telefono" placeholder="300 000 0000">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Fecha</label>
+                <input type="date" class="form-control" id="fecha">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Hora (8:00 - 20:00)</label>
+                <input type="time" class="form-control" id="hora">
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold">Motivo de consulta / Síntomas</label>
+                <textarea class="form-control" id="sintomas" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold">Estado Inicial</label>
+                <select class="form-select" id="estado">
+                  <option>Abierta</option>
+                  <option>Terminada</option>
+                  <option>Anulada</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer border-0">
+          <button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-success px-4" onclick="guardarCita()">Guardar Registro</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  if (estado === 'Todas') {
-    mostrarCitas(citas);
-    return;
-  }
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  const filtradas = citas.filter(c => c.estado === estado);
-  mostrarCitas(filtradas);
-}
+  <script>
+    let citas = [];
 
-</script>
+    // URLs de GIFs profesionales para cada animal
+    const animalGifs = {
+      perro: 'https://www.anipedia.net/images/gifs-animales-perros.gif',
+      gato: 'https://www.anipedia.net/images/gifs-animados-gato-mariposa.gif',
+      conejo: 'https://www.anipedia.net/images/gifs-animados-infantiles-conejos.gif',
+      hamster: 'https://www.gifsanimados.org/img-roedor-imagen-animada-0010-66132.htmhttps://www.gifsanimados.org/data/media/214/roedor-imagen-animada-0010.gif',
+      loro: 'https://www.gifsanimados.org/data/media/230/pajaro-y-ave-imagen-animada-0515.gif',
+      reptil: 'https://www.anipedia.net/images/gifs-serpientes.gif',
+      minipig: 'https://www.gifsanimados.org/data/media/293/cerdo-puerco-y-cochino-imagen-animada-0005.gif',
+      default: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmZ6Z3N6emR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKv6lS27TpkT7Hy/giphy.gif'
+    };
 
+    function mostrarAlerta(mensaje, tipo = "warning") {
+      const alerta = document.getElementById('alerta');
+      alerta.innerHTML = `
+        <div class="alert alert-${tipo} alert-dismissible fade show border-0 shadow-sm">
+          ${mensaje}
+          <button class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+      setTimeout(() => { alerta.innerHTML = ''; }, 4000);
+    }
+
+    function guardarCita() {
+      const campos = ['mascota', 'dueno', 'tipo', 'telefono', 'fecha', 'hora', 'sintomas', 'estado'];
+      const valores = {};
+      
+      for(let campo of campos) {
+        valores[campo] = document.getElementById(campo).value.trim();
+        if(!valores[campo]) return mostrarAlerta(`El campo ${campo} es obligatorio`);
+      }
+
+      const indice = document.getElementById('indiceEditar').value;
+      
+      if (indice === "") citas.push(valores);
+      else citas[indice] = valores;
+
+      mostrarCitas(citas);
+      mostrarAlerta("¡Registro actualizado!", "success");
+      bootstrap.Modal.getInstance(document.getElementById('modalCita')).hide();
+    }
+
+    function mostrarCitas(lista) {
+      const contenedor = document.getElementById('contenedorCitas');
+      contenedor.innerHTML = lista.length === 0 ? '<p class="text-center text-muted">No hay citas registradas</p>' : '';
+
+      lista.forEach((c, i) => {
+        const badgeColor = c.estado === 'Abierta' ? 'bg-success' : (c.estado === 'Anulada' ? 'bg-danger' : 'bg-secondary');
+        const gifUrl = animalGifs[c.tipo.toLowerCase()] || animalGifs.default;
+
+        contenedor.innerHTML += `
+          <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+              <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-3 px-3">
+                <div class="d-flex align-items-center">
+                   <img src="${gifUrl}" class="animal-gif me-2" alt="animal">
+                   <div>
+                     <h5 class="m-0 fw-bold text-dark">${c.mascota}</h5>
+                     <small class="text-muted text-uppercase" style="font-size:0.7rem">${c.tipo}</small>
+                   </div>
+                </div>
+                <span class="badge rounded-pill ${badgeColor} status-badge">${c.estado}</span>
+              </div>
+              <div class="card-body">
+                <p class="mb-1"><strong>👤 Dueño:</strong> ${c.dueno}</p>
+                <p class="mb-1"><strong>📞 Tel:</strong> ${c.telefono}</p>
+                <p class="mb-1"><strong>📅 Fecha:</strong> ${c.fecha} | <strong>⏰</strong> ${c.hora}</p>
+                <div class="bg-light p-2 rounded mt-2">
+                  <small><strong>Motivo:</strong> ${c.sintomas}</small>
+                </div>
+              </div>
+              <div class="card-footer bg-white border-0 d-flex gap-2 pb-3">
+                <button class="btn btn-outline-warning btn-sm w-100" onclick="editarCita(${i})">Editar</button>
+                <button class="btn btn-outline-danger btn-sm w-100" onclick="eliminarCita(${i})">Eliminar</button>
+              </div>
+            </div>
+          </div>`;
+      });
+    }
+
+    function editarCita(i) {
+      const c = citas[i];
+      Object.keys(c).forEach(key => document.getElementById(key).value = c[key]);
+      document.getElementById('indiceEditar').value = i;
+      document.getElementById('modalTitulo').textContent = 'Modificar Registro';
+      new bootstrap.Modal(document.getElementById('modalCita')).show();
+    }
+
+    function eliminarCita(i) {
+      if(confirm('¿Seguro que desea eliminar esta cita?')) {
+        citas.splice(i, 1);
+        mostrarCitas(citas);
+        mostrarAlerta('Registro eliminado', 'danger');
+      }
+    }
+
+    function filtrar(estado) {
+      if (estado === 'Todas') return mostrarCitas(citas);
+      mostrarCitas(citas.filter(c => c.estado === estado));
+    }
+
+    function limpiarFormulario() {
+      document.getElementById('formCita').reset();
+      document.getElementById('indiceEditar').value = '';
+      document.getElementById('modalTitulo').textContent = 'Nueva Cita Veterinaria';
+    }
+  </script>
 </body>
 </html>
