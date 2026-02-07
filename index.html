@@ -31,18 +31,38 @@
     }
 
     .header-vet {
-      background-color: #fbd5e5; 
+      background-color: #fbd5e5;
       color: #633a4c;
       border-radius: 0 0 40px 40px;
       border-bottom: 4px solid #f8bbd0;
     }
 
-    .btn-primary { background-color: #b5b6ff; border: none; }
-    .btn-primary:hover { background-color: #686de0; }
-    
+    .btn-primary {
+      background-color: #b5b6ff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #686de0;
+    }
+
     .status-badge {
       font-size: 0.8rem;
       padding: 8px 15px;
+    }
+
+    .cita-number {
+      background-color: #633a4c;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: bold;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      margin-right: 12px;
     }
   </style>
 </head>
@@ -60,7 +80,8 @@
 
     <div class="row mb-4 align-items-center">
       <div class="col-md-6 text-center text-md-start">
-        <button class="btn btn-primary btn-lg shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#modalCita" onclick="limpiarFormulario()">
+        <button class="btn btn-primary btn-lg shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#modalCita"
+          onclick="limpiarFormulario()">
           ➕ Nueva Cita
         </button>
       </div>
@@ -75,7 +96,7 @@
     </div>
 
     <div id="contenedorCitas" class="row g-4">
-      </div>
+    </div>
   </div>
 
   <div class="modal fade" id="modalCita" tabindex="-1">
@@ -91,7 +112,7 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label small fw-bold">Nombre Mascota</label>
-                <input type="text" class="form-control" id="mascota" placeholder="Ej: Zeus">
+                <input type="text" class="form-control" id="mascota" placeholder="Rocky">
               </div>
               <div class="col-md-6">
                 <label class="form-label small fw-bold">Propietario</label>
@@ -106,8 +127,11 @@
                   <option value="conejo">Conejo 🐰</option>
                   <option value="hamster">Hámster 🐹</option>
                   <option value="loro">Ave / Loro 🦜</option>
-                  <option value="reptil">Reptil / Iguana 🦎</option>
+                  <option value="serpiente">Serpiente 🐍</option>
                   <option value="minipig">Mini Pig 🐷</option>
+                  <option value="iguna">Iguana 🦎</option>
+                  <option value="huron">Huron</option>
+                  <option value="erizo">Erizo</option>
                 </select>
               </div>
               <div class="col-md-6">
@@ -145,22 +169,55 @@
     </div>
   </div>
 
+  <div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-body text-center p-4">
+          <div class="text-danger mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-trash3-fill"
+              viewBox="0 0 16 16">
+              <path
+                d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+            </svg>
+          </div>
+          <h6 class="fw-bold">¿Eliminar esta cita?</h6>
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-light btn-sm w-100" data-bs-dismiss="modal">No</button>
+            <button class="btn btn-danger btn-sm w-100" id="btnConfirmarBorrar">Sí, borrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    let citas = [];
+    
+    let citas = JSON.parse(localStorage.getItem('mimos_citas')) || [];
+    let indiceABorrar = null;
 
-    // URLs de GIFs profesionales para cada animal
+    document.addEventListener('DOMContentLoaded', () => { 
+      mostrarCitas(citas);
+    });
+
     const animalGifs = {
       perro: 'https://www.anipedia.net/images/gifs-animales-perros.gif',
       gato: 'https://www.anipedia.net/images/gifs-animados-gato-mariposa.gif',
       conejo: 'https://www.anipedia.net/images/gifs-animados-infantiles-conejos.gif',
-      hamster: 'https://www.gifsanimados.org/img-roedor-imagen-animada-0010-66132.htmhttps://www.gifsanimados.org/data/media/214/roedor-imagen-animada-0010.gif',
+      hamster: 'https://www.gifsanimados.org/data/media/214/roedor-imagen-animada-0010.gif',
       loro: 'https://www.gifsanimados.org/data/media/230/pajaro-y-ave-imagen-animada-0515.gif',
-      reptil: 'https://www.anipedia.net/images/gifs-serpientes.gif',
+      serpiente: 'https://www.anipedia.net/images/gifs-serpientes.gif',
       minipig: 'https://www.gifsanimados.org/data/media/293/cerdo-puerco-y-cochino-imagen-animada-0005.gif',
-      default: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmZ6Z3N6emR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKv6lS27TpkT7Hy/giphy.gif'
+      iguana: 'https://www.gifsanimados.org/data/media/1270/iguana-imagen-animada-0008.gif',
+      huron: 'https://www.gifsanimados.org/data/media/497/huron-imagen-animada-0041.gif',
+      erizo: 'https://www.gifsanimados.org/data/media/203/erizo-imagen-animada-0002.gif',
+      default: 'https://www.gifsanimados.org/data/media/202/animal-imagen-animada-0562.gif'
     };
+
+    function guardarEnStorage() {
+      localStorage.setItem('mimos_citas', JSON.stringify(citas));
+    }
 
     function mostrarAlerta(mensaje, tipo = "warning") {
       const alerta = document.getElementById('alerta');
@@ -175,19 +232,20 @@
     function guardarCita() {
       const campos = ['mascota', 'dueno', 'tipo', 'telefono', 'fecha', 'hora', 'sintomas', 'estado'];
       const valores = {};
-      
-      for(let campo of campos) {
+
+      for (let campo of campos) {
         valores[campo] = document.getElementById(campo).value.trim();
-        if(!valores[campo]) return mostrarAlerta(`El campo ${campo} es obligatorio`);
+        if (!valores[campo]) return mostrarAlerta(`El campo ${campo} es obligatorio`);
       }
 
       const indice = document.getElementById('indiceEditar').value;
-      
+
       if (indice === "") citas.push(valores);
       else citas[indice] = valores;
 
+      guardarEnStorage();
       mostrarCitas(citas);
-      mostrarAlerta("¡Registro actualizado!", "success");
+      mostrarAlerta("¡Registro guardado!", "success");
       bootstrap.Modal.getInstance(document.getElementById('modalCita')).hide();
     }
 
@@ -198,31 +256,31 @@
       lista.forEach((c, i) => {
         const badgeColor = c.estado === 'Abierta' ? 'bg-success' : (c.estado === 'Anulada' ? 'bg-danger' : 'bg-secondary');
         const gifUrl = animalGifs[c.tipo.toLowerCase()] || animalGifs.default;
-
+        const numId = (i + 1).toString().padStart(2, '0');
+        
         contenedor.innerHTML += `
-          <div class="col-md-6 col-lg-4">
+         <div class="col-md-6 col-lg-4">
             <div class="card shadow-sm h-100">
-              <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-3 px-3">
+              <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-3">
                 <div class="d-flex align-items-center">
-                   <img src="${gifUrl}" class="animal-gif me-2" alt="animal">
+                   <div class="cita-number">${numId}</div>
+                   <img src="${gifUrl}" class="animal-gif me-2" onerror="this.src='${animalGifs.default}'">
                    <div>
-                     <h5 class="m-0 fw-bold text-dark">${c.mascota}</h5>
-                     <small class="text-muted text-uppercase" style="font-size:0.7rem">${c.tipo}</small>
+                     <h5 class="m-0 fw-bold">${c.mascota}</h5>
+                     <small class="text-muted text-uppercase">${c.tipo}</small>
                    </div>
                 </div>
-                <span class="badge rounded-pill ${badgeColor} status-badge">${c.estado}</span>
+                <span class="badge rounded-pill ${badgeColor}">${c.estado}</span>
               </div>
               <div class="card-body">
-                <p class="mb-1"><strong>👤 Dueño:</strong> ${c.dueno}</p>
-                <p class="mb-1"><strong>📞 Tel:</strong> ${c.telefono}</p>
-                <p class="mb-1"><strong>📅 Fecha:</strong> ${c.fecha} | <strong>⏰</strong> ${c.hora}</p>
-                <div class="bg-light p-2 rounded mt-2">
-                  <small><strong>Motivo:</strong> ${c.sintomas}</small>
-                </div>
+                <p class="mb-1 small"><strong>Dueño:</strong> ${c.dueno}</p>
+                <p class="mb-1 small"><strong>Tel:</strong> ${c.telefono}</p>
+                <p class="mb-1 small"><strong>Fecha:</strong> ${c.fecha} - ${c.hora}</p>
+                <div class="bg-light p-2 rounded mt-2 small"><em>${c.sintomas}</em></div>
               </div>
               <div class="card-footer bg-white border-0 d-flex gap-2 pb-3">
                 <button class="btn btn-outline-warning btn-sm w-100" onclick="editarCita(${i})">Editar</button>
-                <button class="btn btn-outline-danger btn-sm w-100" onclick="eliminarCita(${i})">Eliminar</button>
+                <button class="btn btn-outline-danger btn-sm w-100" onclick="confirmarEliminacion(${i})">Eliminar</button>
               </div>
             </div>
           </div>`;
@@ -237,13 +295,22 @@
       new bootstrap.Modal(document.getElementById('modalCita')).show();
     }
 
-    function eliminarCita(i) {
-      if(confirm('¿Seguro que desea eliminar esta cita?')) {
-        citas.splice(i, 1);
-        mostrarCitas(citas);
-        mostrarAlerta('Registro eliminado', 'danger');
-      }
+    function confirmarEliminacion(i) {
+      indiceABorrar = i;
+      const modal = new bootstrap.Modal(document.getElementById('modalConfirmarEliminar'));
+      modal.show();
     }
+
+    document.getElementById('btnConfirmarBorrar').onclick = function () {
+      if (indiceABorrar !== null) {
+        citas.splice(indiceABorrar, 1);
+        guardarEnStorage();
+        mostrarCitas(citas);
+        bootstrap.Modal.getInstance(document.getElementById('modalConfirmarEliminar')).hide();
+        mostrarAlerta("Registro eliminado", "danger");
+        indiceABorrar = null;
+      }
+    };
 
     function filtrar(estado) {
       if (estado === 'Todas') return mostrarCitas(citas);
