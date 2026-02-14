@@ -229,25 +229,36 @@
       setTimeout(() => { alerta.innerHTML = ''; }, 4000);
     }
 
-    function guardarCita() {
-      const campos = ['mascota', 'dueno', 'tipo', 'telefono', 'fecha', 'hora', 'sintomas', 'estado'];
-      const valores = {};
+   function guardarCita() {
+  const campos = ['mascota', 'dueno', 'tipo', 'telefono', 'fecha', 'hora', 'sintomas', 'estado'];
+  const valores = {};
 
-      for (let campo of campos) {
-        valores[campo] = document.getElementById(campo).value.trim();
-        if (!valores[campo]) return mostrarAlerta(`El campo ${campo} es obligatorio`);
-      }
+  for (let campo of campos) {
+    valores[campo] = document.getElementById(campo).value.trim();
+    if (!valores[campo]) 
+      return mostrarAlerta(`El campo ${campo} es obligatorio`, "warning");
+  }
 
-      const indice = document.getElementById('indiceEditar').value;
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
 
-      if (indice === "") citas.push(valores);
-      else citas[indice] = valores;
+  const fechaSeleccionada = new Date(valores.fecha);
 
-      guardarEnStorage();
-      mostrarCitas(citas);
-      mostrarAlerta("¡Registro guardado!", "success");
-      bootstrap.Modal.getInstance(document.getElementById('modalCita')).hide();
-    }
+  if (fechaSeleccionada <= hoy) {
+    return mostrarAlerta("La fecha debe ser a partir de mañana", "danger");
+  }
+
+  const indice = document.getElementById('indiceEditar').value;
+
+  if (indice === "") citas.push(valores);
+  else citas[indice] = valores;
+
+  guardarEnStorage();
+  mostrarCitas(citas);
+  mostrarAlerta("¡Registro guardado!", "success");
+  bootstrap.Modal.getInstance(document.getElementById('modalCita')).hide();
+}
+
 
     function mostrarCitas(lista) {
       const contenedor = document.getElementById('contenedorCitas');
